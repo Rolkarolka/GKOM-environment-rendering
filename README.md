@@ -7,7 +7,7 @@ przy wykorzystaniu mapy wysokości.
 W tym celu należy zaimplementować następujące punkty:
 1. Przygotowanie geometrii środowiska opartą o wczytaną mapę głębokości [Grzesiek]
 - Wybór pliku zawierającego mapę głębokości może być zaimplementowana w kodzie, występować jako parametr programu, bądź nazwa pliku wczytywana jest z pliku konfiguracyjnego
-2. Geometria powinna zawierać macierz punktów N x M, gdzie M i N to ilość próbek z mapy głębokości. Punkty powinny być oddalone od siebie we współrzędnych X i Y o stałą, zdefiniowaną zmienną odległość. Współrzędna Z [Grzesiek]
+2. Geometria powinna zawierać macierz punktów N x M, gdzie M i N to ilość próbek z mapy głębokości. [Grzesiek]
 - Punkty powinny być oddalone od siebie we współrzędnych X i Y o stałą odległość, najlepiej definiowaną przez zmienną.
 - Współrzędna Z pozycji wierzchołka powinna być wczytywana z mapy głębokości.
 - Kolejność renderowania wierzchołków powinna być przekazana do GPU jako Element Buffer Object.
