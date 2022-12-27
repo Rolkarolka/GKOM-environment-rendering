@@ -28,8 +28,13 @@ Program jest uruchamiany poprzez wywołanie skryptu `main.py` oraz podanie mu ni
 - shader_name - nazwa wybranego shadera
 - map_name - nazwa wybranej mapy wysokości
 
+Skrypt przyjmuje też opcjonalne parametry:
+- height_scale - odpowiada za skalowanie "górzystości" renderowanego terenu (w szczególności: jej zmniejszanie). Przyjmuje wartości zmiennoprzecinkowe. Domyślnie wynosi `1.0`.
+
 Należy pamiętać, że wszystkie shadery powinny znajdować się w katalogu `resources/shaders/`, natomiast wszystkie mapy wysokości w katalogu `resources/heightmaps/`.
 
-## Przykładowe wywołanie programu
+### Przykładowe wywołania programu
 
 `python3 main.py --shader_name phong --map_name heightmap_1`
+
+`python3 main.py --shader_name phong --map_name heightmap_uk_2 --height_scale 0.1`
