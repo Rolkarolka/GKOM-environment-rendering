@@ -20,7 +20,8 @@ class MainWindowConfig(WindowConfig):
         shaders = get_shaders()
         self.program = self.ctx.program(vertex_shader=shaders[self.argv.shader_name].vertex_shader,
                                         fragment_shader=shaders[self.argv.shader_name].fragment_shader)
-        self.height_scale = 0.5  # TODO: This can be an argv param - subject to discussion
+
+        self.height_scale = self.argv.height_scale if self.argv.height_scale is not None else 1.0
 
         self.load_png_heightmap(self.argv.map_name)
         self.generate_terrain()
@@ -102,6 +103,9 @@ class MainWindowConfig(WindowConfig):
         parser.add_argument('--shader_name', type=str, required=True,
                             help='Name of the shader to look for in the shader_path directory')
         parser.add_argument('--map_name', type=str, required=True, help='Name of the map to load')
+        parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
+                                                                               'that enables the user to scale the '
+                                                                               'height of the map (defaults to 1.0)')
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
@@ -139,7 +143,7 @@ class MainWindowConfig(WindowConfig):
         new_radius_horizontal = math.sqrt(new_eye[0] ** 2 + new_eye[1] ** 2)
         if radius > 0.0 and new_radius_horizontal / radius > 0.1:
             self.lookat = tuple(new_eye)[:3]
-            
+
     def mouse_scroll_event(self, x_offset, y_offset):
         # make the object appear bigger when scrolling up and smaller when scrolling down
         y_offset /= 2
