@@ -21,3 +21,15 @@ W tym celu należy zaimplementować następujące punkty:
 - Quad powinien mieć naniesioną teksturę wody.
 - Opcjonalnie: Teksturę wody można wykorzystać jako normal mapę, zaaplikowaną we fragment shaderze wody.
 - Dodać poruszanie się fal wody np. jako dodanie UV do tekstury modyfikowanej z czasem zmiennej uniform.
+
+# Uruchamianie programu
+
+Program jest uruchamiany poprzez wywołanie skryptu `main.py` oraz podanie mu niezbędnych parametrów:
+- shader_name - nazwa wybranego shadera
+- map_name - nazwa wybranej mapy wysokości
+
+Należy pamiętać, że wszystkie shadery powinny znajdować się w katalogu `resources/shaders/`, natomiast wszystkie mapy wysokości w katalogu `resources/heightmaps/`.
+
+## Przykładowe wywołanie programu
+
+`python3 main.py --shader_name phong --map_name heightmap_1`
