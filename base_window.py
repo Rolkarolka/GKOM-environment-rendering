@@ -96,11 +96,9 @@ class MainWindowConfig(WindowConfig):
 
     @classmethod
     def add_arguments(cls, parser):
-        parser.add_argument('--shader_path', type=str, required=True, help='Path to the directory with shaders')
         parser.add_argument('--shader_name', type=str, required=True,
                             help='Name of the shader to look for in the shader_path directory')
         parser.add_argument('--map_name', type=str, required=True, help='Name of the map to load')
-        parser.add_argument('--textures_path', type=str, required=True, help='Path to the directory with texutres')
 
     def render(self, time: float, frame_time: float):
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
