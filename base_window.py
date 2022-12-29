@@ -36,15 +36,19 @@ class MainWindowConfig(WindowConfig):
 
     def load_png_heightmap(self, map_name: str) -> None:
         raw_heightmap: ndarray = imageio.v3.imread(f"./resources/heightmaps/{map_name}.png")
-        self.x_range: int = raw_heightmap.shape[0]
-        self.y_range: int = raw_heightmap.shape[1]
+        self.x_range: int = self.argv.N if self.argv.N is not None else 200
+        self.y_range: int = self.argv.M if self.argv.M is not None else 200
 
         self.height_map: ndarray = np.empty([self.x_range, self.y_range, 3])
+        x_factor: float = raw_heightmap.shape[0] / self.x_range
+        y_factor: float = raw_heightmap.shape[1] / self.y_range
         for x_i in range(self.x_range):
             for y_i in range(self.y_range):
                 # this is necessary because png files can store colours as rgb or grayscale values, which creates issues
-                z_val: uint8 = raw_heightmap[x_i][y_i] if len(raw_heightmap.shape) == 2 else raw_heightmap[x_i][y_i][0]
-                self.height_map[x_i][y_i] = np.array([x_i, y_i, z_val])  # add ' / 3' to z_val if stuff's too darn high
+                x: int = round(x_i * x_factor)
+                y: int = round(y_i * y_factor)
+                z_val: uint8 = raw_heightmap[x][y] if len(raw_heightmap.shape) == 2 else raw_heightmap[x][y][0]
+                self.height_map[x_i][y_i] = np.array([x_i, y_i, z_val])
 
     def generate_terrain(self) -> None:
         vertices: ndarray = np.empty([self.x_range * self.y_range, 3])
@@ -111,6 +115,8 @@ class MainWindowConfig(WindowConfig):
         parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
                                                                                'that enables the user to scale the '
                                                                                'height of the map (defaults to 1.0)')
+        parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map')
+        parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map')
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
