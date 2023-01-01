@@ -16,6 +16,12 @@ uniform float specular_factor = 0.3;
 
 uniform float shininess = 0.2;
 
+uniform sampler2D texture_grass;
+uniform sampler2D texture_forest;
+uniform sampler2D texture_tree_stone;
+uniform sampler2D texture_granite;
+uniform sampler2D texture_snow;
+
 void main() {
     // Ustawienie ambientu światła dla symulacji
     vec3 ambient = ambient_factor * light_color;
@@ -36,7 +42,25 @@ void main() {
     float specular_param = pow(min(max(dot(view_vector, reflect_vector), 0.0), 1.0), shininess);
     // Uzwględnienie koloru światła padającego oraz współczynnika zadanego w symulacji
     vec3 specular = specular_param * light_color * specular_factor;
+    // Skalowanie tekstury do większych rozmiarów
+    vec2 texture_position = vec2(pos[0]/20, pos[1]/20);
 
-    // Połączenie wyników działania wszystkich efektów
-    fr_color = vec3(min(max((ambient + diffuse) * obj_color + specular, 0.0), 1.0));
+    if (pos[2] < 40){
+        // Dodanie tekstury
+        vec3 grass_texture = vec3(texture(texture_grass, texture_position));
+        // Połączenie wyników działania wszystkich efektów
+        fr_color = vec3(min(max((ambient + diffuse + grass_texture) * obj_color + specular, 0.0), 1.0));
+    } else if (pos[2] < 80){
+        vec3 forest_texture =  vec3(texture(texture_forest, texture_position));
+        fr_color = vec3(min(max((ambient + diffuse + forest_texture) * obj_color + specular, 0.0), 1.0));
+    } else if (pos[2] < 160){
+        vec3 tree_stone_texture =  vec3(texture(texture_tree_stone, texture_position));
+        fr_color = vec3(min(max((ambient + diffuse + tree_stone_texture) * obj_color + specular, 0.0), 1.0));
+    } else if (pos[2] < 200){
+        vec3 granite_texture =  vec3(texture(texture_granite, texture_position));
+        fr_color = vec3(min(max((ambient + diffuse + granite_texture) * obj_color + specular, 0.0), 1.0));
+    } else {
+        vec3 snow_texture =  vec3(texture(texture_snow, texture_position));
+        fr_color = vec3(min(max((ambient + diffuse + snow_texture) * obj_color + specular, 0.0), 1.0));
+    }
 }

@@ -28,6 +28,7 @@ class MainWindowConfig(WindowConfig):
         self.height_scale: float = self.argv.height_scale if self.argv.height_scale is not None else 1.0
 
         self.load_png_heightmap(self.argv.map_name)
+        self.load_textures()
         self.generate_terrain()
         self.init_shaders_variables()
 
@@ -49,6 +50,26 @@ class MainWindowConfig(WindowConfig):
                 y: int = round(y_i * y_factor)
                 z_val: uint8 = raw_heightmap[x][y] if len(raw_heightmap.shape) == 2 else raw_heightmap[x][y][0]
                 self.height_map[x_i][y_i] = np.array([x_i, y_i, z_val])
+
+    def load_texture(self, texture_name, location) -> None:
+        texture = self.load_texture_2d(f"./textures/{texture_name}.jpg")
+        texture.use(location)
+
+    def load_textures(self):
+        self.program["texture_grass"] = 0
+        self.load_texture("grass", 0)
+
+        self.program["texture_forest"] = 1
+        self.load_texture("forest", 1)
+
+        self.program["texture_tree_stone"] = 2
+        self.load_texture("forest_tree_stone", 2)
+
+        self.program["texture_granite"] = 3
+        self.load_texture("granite", 3)
+
+        self.program["texture_snow"] = 4
+        self.load_texture("snow", 4)
 
     def generate_terrain(self) -> None:
         vertices: ndarray = np.empty([self.x_range * self.y_range, 3])
@@ -121,7 +142,7 @@ class MainWindowConfig(WindowConfig):
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
         self.ctx.enable(DEPTH_TEST)
-        self.input_color.value = (np.sin(time) / 2 + 0.5, 1.0, 0.0)
+        self.input_color.value = (0.75, 0.75, 0.75)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
