@@ -1,11 +1,12 @@
 import math
 from argparse import ArgumentParser
+from enum import IntEnum
 from pathlib import Path
 
 import imageio
 import numpy as np
 from _moderngl import Uniform
-from moderngl import DEPTH_TEST, TRIANGLE_STRIP, Program, Buffer, VertexArray
+from moderngl import DEPTH_TEST, TRIANGLE_STRIP, Program, Buffer, VertexArray, Texture
 from moderngl_window import WindowConfig
 from numpy import ndarray, uint8
 from pyrr import Matrix44, Vector4
@@ -51,25 +52,32 @@ class MainWindowConfig(WindowConfig):
                 z_val: uint8 = raw_heightmap[x][y] if len(raw_heightmap.shape) == 2 else raw_heightmap[x][y][0]
                 self.height_map[x_i][y_i] = np.array([x_i, y_i, z_val])
 
-    def load_texture(self, texture_name, location) -> None:
-        texture = self.load_texture_2d(f"./textures/{texture_name}.jpg")
+    def load_texture(self, texture_name: str, location: int) -> None:
+        texture: Texture = self.load_texture_2d(f"./textures/{texture_name}.jpg")
         texture.use(location)
 
-    def load_textures(self):
-        self.program["texture_grass"] = 0
-        self.load_texture("grass", 0)
+    def load_textures(self) -> None:
+        class Textures(IntEnum):
+            GRASS = 0,
+            FOREST = 1,
+            TREE_STONE = 2,
+            GRANITE = 3,
+            SNOW = 4
 
-        self.program["texture_forest"] = 1
-        self.load_texture("forest", 1)
+        self.program["texture_grass"] = Textures.GRASS
+        self.load_texture("grass", Textures.GRASS)
 
-        self.program["texture_tree_stone"] = 2
-        self.load_texture("forest_tree_stone", 2)
+        self.program["texture_forest"] = Textures.FOREST
+        self.load_texture("forest", Textures.FOREST)
 
-        self.program["texture_granite"] = 3
-        self.load_texture("granite", 3)
+        self.program["texture_tree_stone"] = Textures.TREE_STONE
+        self.load_texture("forest_tree_stone", Textures.TREE_STONE)
 
-        self.program["texture_snow"] = 4
-        self.load_texture("snow", 4)
+        self.program["texture_granite"] = Textures.GRANITE
+        self.load_texture("granite", Textures.GRANITE)
+
+        self.program["texture_snow"] = Textures.SNOW
+        self.load_texture("snow", Textures.SNOW)
 
     def generate_terrain(self) -> None:
         vertices: ndarray = np.empty([self.x_range * self.y_range, 3])
