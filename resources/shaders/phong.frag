@@ -50,8 +50,8 @@ void main() {
 
     if (pos[2] < 23) {
         vec3 water_texture =  vec3(texture(texture_water, texture_position));
-        fr_color = vec3(min(max((ambient + diffuse + water_texture) * max((abs(sin(water_color + pos[1] + pos[2]))), 0.8) + specular, 0.0), 1.0));         }
-    else if (pos[2] < 40){
+        fr_color = vec3(min(max((ambient + diffuse + water_texture) * (sin(0.5 * (water_color + pos[1])) / 10 + 0.9) + specular, 0.0), 1.0));
+    } else if (pos[2] < 40){
         // Dodanie tekstury
         vec3 grass_texture = vec3(texture(texture_grass, texture_position));
         // Połączenie wyników działania wszystkich efektów

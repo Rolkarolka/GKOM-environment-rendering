@@ -26,7 +26,9 @@ class MainWindowConfig(WindowConfig):
         self.program: Program = self.ctx.program(vertex_shader=shaders[self.argv.shader_name].vertex_shader,
                                                  fragment_shader=shaders[self.argv.shader_name].fragment_shader)
 
-        self.height_scale: float = self.argv.height_scale if self.argv.height_scale is not None else 1.0
+        self.height_scale: float = self.argv.height_scale if self.argv.height_scale is not None else 0.3
+
+        self.sea_level: int = 23
 
         self.load_png_heightmap(self.argv.map_name)
         self.load_textures()
@@ -94,9 +96,11 @@ class MainWindowConfig(WindowConfig):
 
         append_to_indices.counter = 0
 
+        sea_bottom = self.sea_level - 3
+
         for x_i in range(self.x_range):
             for y_i in range(self.y_range):
-                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], 20)
+                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], sea_bottom)
                 v_idx: int = y_i * self.x_range + x_i
                 vertices[v_idx] = self.height_map[x_i][y_i]
                 vertices_and_normals[v_idx] = [*self.height_map[x_i][y_i], 0, 0, 0]
@@ -158,7 +162,8 @@ class MainWindowConfig(WindowConfig):
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
         self.ctx.enable(DEPTH_TEST)
         self.input_color.value = (0.75, 0.75, 0.75)
-        self.water_color.value = (time, time, time)
+        waves_speed: float = 7
+        self.water_color.value = (waves_speed * time, waves_speed * time, waves_speed * time)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
@@ -171,7 +176,6 @@ class MainWindowConfig(WindowConfig):
         self.vao.render(TRIANGLE_STRIP)
 
     def mouse_drag_event(self, x: int, y: int, dx: int, dy: int) -> None:
-        # rotate camera around the robot
         width, height = self.wnd.size
         if width > height * self.aspect_ratio:
             width = height * self.aspect_ratio
@@ -189,7 +193,7 @@ class MainWindowConfig(WindowConfig):
         )) * eye_vec4
         # if camera is near the zenith or nadir, try to limit its "jumping" behavior
         new_radius_horizontal: float = math.sqrt(new_eye[0] ** 2 + new_eye[1] ** 2)
-        if radius > 0.0 and new_radius_horizontal / radius > 0.1:
+        if radius > 0.0 and new_radius_horizontal / radius > 0.1 and tuple(new_eye)[2] > self.sea_level:
             self.lookat = tuple(new_eye)[:3]
 
     def mouse_scroll_event(self, x_offset: float, y_offset: float) -> None:
@@ -197,9 +201,10 @@ class MainWindowConfig(WindowConfig):
         y_offset /= 2
         radius: float = math.sqrt(self.lookat[0] ** 2 + self.lookat[1] ** 2 + self.lookat[2] ** 2)
         radius *= (1 - y_offset)
-        if radius >= 1.0:  # prevent unwanted scene rotation
-            self.lookat = (
+        lookat: tuple[float, float, float] = (
                 self.lookat[0] * (1 - y_offset),
                 self.lookat[1] * (1 - y_offset),
-                self.lookat[2] * (1 - y_offset)
+                (self.lookat[2] - self.sea_level) * (1 - y_offset) + self.sea_level
             )
+        if radius >= 1.0 and lookat[2] > self.sea_level:  # prevent unwanted scene rotation
+            self.lookat = lookat
