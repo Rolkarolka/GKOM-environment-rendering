@@ -48,9 +48,9 @@ void main() {
     // Skalowanie tekstury do większych rozmiarów
     vec2 texture_position = vec2(pos[0]/20, pos[1]/20);
 
-    if (pos[2] == 10) {
+    if (pos[2] == 20) {
         vec3 water_texture =  vec3(texture(texture_water, texture_position));
-fr_color = vec3(min(max((ambient + diffuse + water_texture) * min((abs(sin(water_color + pos[1] + pos[2])) + 0.8), 1.0) + specular, 0.0), 1.0));    }
+        fr_color = vec3(min(max((ambient + diffuse + water_texture) * max((abs(sin(water_color + pos[1] + pos[2]))), 0.8) + specular, 0.0), 1.0));    }
     else if (pos[2] < 40){
         // Dodanie tekstury
         vec3 grass_texture = vec3(texture(texture_grass, texture_position));

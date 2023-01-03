@@ -96,7 +96,7 @@ class MainWindowConfig(WindowConfig):
 
         for x_i in range(self.x_range):
             for y_i in range(self.y_range):
-                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], 10)
+                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], 20)
                 v_idx: int = y_i * self.x_range + x_i
                 vertices[v_idx] = self.height_map[x_i][y_i]
                 vertices_and_normals[v_idx] = [*self.height_map[x_i][y_i], 0, 0, 0]
