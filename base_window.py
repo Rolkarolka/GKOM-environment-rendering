@@ -158,7 +158,7 @@ class MainWindowConfig(WindowConfig):
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
         self.ctx.enable(DEPTH_TEST)
         self.input_color.value = (0.75, 0.75, 0.75)
-        self.water_color.value = (np.sin(time) / 2 + 0.7, np.sin(time) / 2 + 0.7, np.sin(time) / 2 + 0.7)
+        self.water_color.value = (time, time, time)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
