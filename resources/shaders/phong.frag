@@ -9,6 +9,7 @@ uniform vec3 light_pos = vec3(-2, -0.7, -30);
 
 uniform vec3 light_color = vec3(1.0, 0.75, 0.8);
 uniform vec3 obj_color = vec3(1.0, 0.75, 0.8);
+uniform vec3 water_color = vec3(1.0, 0.75, 0.8);
 
 uniform float ambient_factor = 0.1;
 uniform float diffuse_factor = 1.0;
@@ -21,6 +22,8 @@ uniform sampler2D texture_forest;
 uniform sampler2D texture_tree_stone;
 uniform sampler2D texture_granite;
 uniform sampler2D texture_snow;
+uniform sampler2D texture_water;
+
 
 void main() {
     // Ustawienie ambientu światła dla symulacji
@@ -45,7 +48,11 @@ void main() {
     // Skalowanie tekstury do większych rozmiarów
     vec2 texture_position = vec2(pos[0]/20, pos[1]/20);
 
-    if (pos[2] < 40){
+    if (pos[2] == 10) {
+        vec3 water_texture =  vec3(texture(texture_water, texture_position));
+        fr_color = vec3(min(max((ambient + diffuse + water_texture) * water_color + specular, 0.0), 1.0));
+    }
+    else if (pos[2] < 40){
         // Dodanie tekstury
         vec3 grass_texture = vec3(texture(texture_grass, texture_position));
         // Połączenie wyników działania wszystkich efektów

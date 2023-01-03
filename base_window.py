@@ -62,7 +62,8 @@ class MainWindowConfig(WindowConfig):
             FOREST = 1,
             TREE_STONE = 2,
             GRANITE = 3,
-            SNOW = 4
+            SNOW = 4,
+            WATER = 5
 
         self.program["texture_grass"] = Textures.GRASS
         self.load_texture("grass", Textures.GRASS)
@@ -79,6 +80,9 @@ class MainWindowConfig(WindowConfig):
         self.program["texture_snow"] = Textures.SNOW
         self.load_texture("snow", Textures.SNOW)
 
+        self.program["texture_water"] = Textures.WATER
+        self.load_texture("water", Textures.WATER)
+
     def generate_terrain(self) -> None:
         vertices: ndarray = np.empty([self.x_range * self.y_range, 3])
         vertices_and_normals: ndarray = np.empty([self.x_range * self.y_range, 6])
@@ -92,6 +96,7 @@ class MainWindowConfig(WindowConfig):
 
         for x_i in range(self.x_range):
             for y_i in range(self.y_range):
+                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], 10)
                 v_idx: int = y_i * self.x_range + x_i
                 vertices[v_idx] = self.height_map[x_i][y_i]
                 vertices_and_normals[v_idx] = [*self.height_map[x_i][y_i], 0, 0, 0]
@@ -135,6 +140,8 @@ class MainWindowConfig(WindowConfig):
     def init_shaders_variables(self) -> None:
         self.tr_matrix: Uniform = self.program['tr_matrix']
         self.input_color: Uniform = self.program['obj_color']
+        self.water_color: Uniform = self.program['water_color']
+
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
@@ -151,6 +158,7 @@ class MainWindowConfig(WindowConfig):
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
         self.ctx.enable(DEPTH_TEST)
         self.input_color.value = (0.75, 0.75, 0.75)
+        self.water_color.value = (np.sin(time) / 2 + 0.7, np.sin(time) / 2 + 0.7, np.sin(time) / 2 + 0.7)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
