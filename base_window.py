@@ -35,7 +35,7 @@ class MainWindowConfig(WindowConfig):
         self.generate_terrain()
         self.init_shaders_variables()
 
-        self.lookat: tuple[float, float, float] = (
+        self.viewer_pos: tuple[float, float, float] = (
             -self.x_range * 3 / 4, -self.y_range * 3 / 4, (self.x_range + self.y_range) / 3)
 
     def load_png_heightmap(self, map_name: str) -> None:
@@ -167,7 +167,7 @@ class MainWindowConfig(WindowConfig):
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
-        self.tr_matrix.write((proj * Matrix44.look_at(self.lookat, (0.0, 0.0, 1.0),
+        self.tr_matrix.write((proj * Matrix44.look_at(self.viewer_pos, (0.0, 0.0, 1.0),
                                                       (0.0, 0.0, 1.0), )
                               * Matrix44.from_z_rotation(1 / 10 * 2 * np.pi)
                               * Matrix44.from_translation((-self.x_range / 2, -self.x_range / 2, 1.0))
@@ -183,9 +183,9 @@ class MainWindowConfig(WindowConfig):
             height = width / self.aspect_ratio
         scaled_dx: float = dx * 2.0 / width
         scaled_dy: float = dy * 2.0 / height
-        radius: float = math.sqrt(self.lookat[0] ** 2 + self.lookat[1] ** 2 + self.lookat[2] ** 2)
-        eye_vec4: Vector4 = Vector4(self.lookat + (1.0,))
-        current_angle_horizontal: float = math.atan2(self.lookat[1], self.lookat[0])
+        radius: float = math.sqrt(self.viewer_pos[0] ** 2 + self.viewer_pos[1] ** 2 + self.viewer_pos[2] ** 2)
+        eye_vec4: Vector4 = Vector4(self.viewer_pos + (1.0,))
+        current_angle_horizontal: float = math.atan2(self.viewer_pos[1], self.viewer_pos[0])
         new_eye: Vector4 = Matrix44.from_eulers((
             -4 * math.sin(current_angle_horizontal) * scaled_dy,
             4 * scaled_dx,
@@ -194,17 +194,17 @@ class MainWindowConfig(WindowConfig):
         # if camera is near the zenith or nadir, try to limit its "jumping" behavior
         new_radius_horizontal: float = math.sqrt(new_eye[0] ** 2 + new_eye[1] ** 2)
         if radius > 0.0 and new_radius_horizontal / radius > 0.1 and tuple(new_eye)[2] > self.sea_level:
-            self.lookat = tuple(new_eye)[:3]
+            self.viewer_pos = tuple(new_eye)[:3]
 
     def mouse_scroll_event(self, x_offset: float, y_offset: float) -> None:
         # make the object appear bigger when scrolling up and smaller when scrolling down
         y_offset /= 2
-        radius: float = math.sqrt(self.lookat[0] ** 2 + self.lookat[1] ** 2 + self.lookat[2] ** 2)
+        radius: float = math.sqrt(self.viewer_pos[0] ** 2 + self.viewer_pos[1] ** 2 + self.viewer_pos[2] ** 2)
         radius *= (1 - y_offset)
-        lookat: tuple[float, float, float] = (
-                self.lookat[0] * (1 - y_offset),
-                self.lookat[1] * (1 - y_offset),
-                (self.lookat[2] - self.sea_level) * (1 - y_offset) + self.sea_level
+        viewer_pos: tuple[float, float, float] = (
+                self.viewer_pos[0] * (1 - y_offset),
+                self.viewer_pos[1] * (1 - y_offset),
+                (self.viewer_pos[2] - self.sea_level) * (1 - y_offset) + self.sea_level
             )
-        if radius >= 1.0 and lookat[2] > self.sea_level:  # prevent unwanted scene rotation
-            self.lookat = lookat
+        if radius >= 1.0 and viewer_pos[2] > self.sea_level:  # prevent unwanted scene rotation
+            self.viewer_pos = viewer_pos
