@@ -144,7 +144,7 @@ class MainWindowConfig(WindowConfig):
     def init_shaders_variables(self) -> None:
         self.tr_matrix: Uniform = self.program['tr_matrix']
         self.input_color: Uniform = self.program['obj_color']
-        self.water_color: Uniform = self.program['water_color']
+        self.water_floating_param: Uniform = self.program['water_floating_param']
 
 
     @classmethod
@@ -163,7 +163,7 @@ class MainWindowConfig(WindowConfig):
         self.ctx.enable(DEPTH_TEST)
         self.input_color.value = (0.75, 0.75, 0.75)
         waves_speed: float = 7
-        self.water_color.value = (waves_speed * time, waves_speed * time, waves_speed * time)
+        self.water_floating_param.value = (waves_speed * time, waves_speed * time, waves_speed * time)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 

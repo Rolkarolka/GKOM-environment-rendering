@@ -9,7 +9,7 @@ uniform vec3 light_pos = vec3(-2, -0.7, 300);
 
 uniform vec3 light_color = vec3(1, 1, 1);
 uniform vec3 obj_color = vec3(0.86, 0.86, 0.86);
-uniform vec3 water_color = vec3(1.0, 0.75, 0.8);
+uniform vec3 water_floating_param = vec3(1.0, 0.75, 0.8);
 
 uniform float ambient_factor = 0.6;
 uniform float diffuse_factor = 1.0;
@@ -102,7 +102,7 @@ void main() {
 
     if (pos[2] < 23) {
         fr_color = vec3(clamp(
-            (ambient + diffuse) * water_texture * (0.15 * sin(0.5 * (water_color + pos[1])) + 0.85) + specular,
+            (ambient + diffuse) * water_texture * (0.15 * sin(0.5 * (water_floating_param + pos[1])) + 0.85) + specular,
             0.0, 1.0));
     }
     else {
