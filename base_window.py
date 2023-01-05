@@ -26,7 +26,9 @@ class MainWindowConfig(WindowConfig):
         self.program: Program = self.ctx.program(vertex_shader=shaders[self.argv.shader_name].vertex_shader,
                                                  fragment_shader=shaders[self.argv.shader_name].fragment_shader)
 
-        self.height_scale: float = self.argv.height_scale if self.argv.height_scale is not None else 0.3
+        self.x_scale: float = self.argv.x_scale if self.argv.x_scale is not None else 1.0
+        self.y_scale: float = self.argv.y_scale if self.argv.y_scale is not None else 1.0
+        self.z_scale: float = self.argv.z_scale if self.argv.z_scale is not None else 1.0
 
         self.sea_level: int = 23
 
@@ -152,11 +154,14 @@ class MainWindowConfig(WindowConfig):
         parser.add_argument('--shader_name', type=str, required=True,
                             help='Name of the shader to look for in the shader_path directory')
         parser.add_argument('--map_name', type=str, required=True, help='Name of the map to load')
-        parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
-                                                                               'that enables the user to scale the '
-                                                                               'height of the map (defaults to 1.0)')
-        parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map')
-        parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map')
+        # parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
+        #                                                                        'that enables the user to scale the '
+        #                                                                        'height of the map (defaults to 1.0)')
+        parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map (defaults to 200)')
+        parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map (defaults to 200)')
+        parser.add_argument('--x_scale', type=float, required=False, help='[optional] Scale of the length of the map (defaults to 1.0)')
+        parser.add_argument('--y_scale', type=float, required=False, help='[optional] Scale of the width of the map (defaults to 1.0)')
+        parser.add_argument('--z_scale', type=float, required=False, help='[optional] Scale of the height of the map (defaults to 1.0)')
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
@@ -170,8 +175,11 @@ class MainWindowConfig(WindowConfig):
         self.tr_matrix.write((proj * Matrix44.look_at(self.viewer_pos, (0.0, 0.0, 1.0),
                                                       (0.0, 0.0, 1.0), )
                               * Matrix44.from_z_rotation(1 / 10 * 2 * np.pi)
-                              * Matrix44.from_translation((-self.x_range / 2, -self.x_range / 2, 1.0))
-                              * Matrix44.from_scale((1.0, 1.0, self.height_scale))
+                              * Matrix44.from_translation((
+                                    -self.x_range / 2 * self.x_scale,
+                                    -self.y_range / 2 * self.y_scale,
+                                    1.0))
+                              * Matrix44.from_scale((self.x_scale, self.y_scale, self.z_scale))
                               ).astype('float32'))
         self.vao.render(TRIANGLE_STRIP)
 
