@@ -154,9 +154,6 @@ class MainWindowConfig(WindowConfig):
         parser.add_argument('--shader_name', type=str, required=True,
                             help='Name of the shader to look for in the shader_path directory')
         parser.add_argument('--map_name', type=str, required=True, help='Name of the map to load')
-        # parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
-        #                                                                        'that enables the user to scale the '
-        #                                                                        'height of the map (defaults to 1.0)')
         parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map (defaults to 200)')
         parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map (defaults to 200)')
         parser.add_argument('--x_scale', type=float, required=False, help='[optional] Scale of the length of the map (defaults to 1.0)')
