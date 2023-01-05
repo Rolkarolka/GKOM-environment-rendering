@@ -26,14 +26,18 @@ class MainWindowConfig(WindowConfig):
         self.program: Program = self.ctx.program(vertex_shader=shaders[self.argv.shader_name].vertex_shader,
                                                  fragment_shader=shaders[self.argv.shader_name].fragment_shader)
 
-        self.height_scale: float = self.argv.height_scale if self.argv.height_scale is not None else 1.0
+        self.x_scale: float = self.argv.x_scale if self.argv.x_scale is not None else 1.0
+        self.y_scale: float = self.argv.y_scale if self.argv.y_scale is not None else 1.0
+        self.z_scale: float = self.argv.z_scale if self.argv.z_scale is not None else 1.0
+
+        self.sea_level: int = 23
 
         self.load_png_heightmap(self.argv.map_name)
         self.load_textures()
         self.generate_terrain()
         self.init_shaders_variables()
 
-        self.lookat: tuple[float, float, float] = (
+        self.viewer_pos: tuple[float, float, float] = (
             -self.x_range * 3 / 4, -self.y_range * 3 / 4, (self.x_range + self.y_range) / 3)
 
     def load_png_heightmap(self, map_name: str) -> None:
@@ -62,7 +66,8 @@ class MainWindowConfig(WindowConfig):
             FOREST = 1,
             TREE_STONE = 2,
             GRANITE = 3,
-            SNOW = 4
+            SNOW = 4,
+            WATER = 5
 
         self.program["texture_grass"] = Textures.GRASS
         self.load_texture("grass", Textures.GRASS)
@@ -79,6 +84,9 @@ class MainWindowConfig(WindowConfig):
         self.program["texture_snow"] = Textures.SNOW
         self.load_texture("snow", Textures.SNOW)
 
+        self.program["texture_water"] = Textures.WATER
+        self.load_texture("water", Textures.WATER)
+
     def generate_terrain(self) -> None:
         vertices: ndarray = np.empty([self.x_range * self.y_range, 3])
         vertices_and_normals: ndarray = np.empty([self.x_range * self.y_range, 6])
@@ -90,8 +98,11 @@ class MainWindowConfig(WindowConfig):
 
         append_to_indices.counter = 0
 
+        sea_bottom = self.sea_level - 3
+
         for x_i in range(self.x_range):
             for y_i in range(self.y_range):
+                self.height_map[x_i][y_i][2] = max(self.height_map[x_i][y_i][2], sea_bottom)
                 v_idx: int = y_i * self.x_range + x_i
                 vertices[v_idx] = self.height_map[x_i][y_i]
                 vertices_and_normals[v_idx] = [*self.height_map[x_i][y_i], 0, 0, 0]
@@ -135,35 +146,41 @@ class MainWindowConfig(WindowConfig):
     def init_shaders_variables(self) -> None:
         self.tr_matrix: Uniform = self.program['tr_matrix']
         self.input_color: Uniform = self.program['obj_color']
+        self.water_floating_param: Uniform = self.program['water_floating_param']
+
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
         parser.add_argument('--shader_name', type=str, required=True,
                             help='Name of the shader to look for in the shader_path directory')
         parser.add_argument('--map_name', type=str, required=True, help='Name of the map to load')
-        parser.add_argument('--height_scale', type=float, required=False, help='[optional] Floating point number, '
-                                                                               'that enables the user to scale the '
-                                                                               'height of the map (defaults to 1.0)')
-        parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map')
-        parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map')
+        parser.add_argument('-N', type=int, required=False, help='[optional] Length of the map (defaults to 200)')
+        parser.add_argument('-M', type=int, required=False, help='[optional] Width of the map (defaults to 200)')
+        parser.add_argument('--x_scale', type=float, required=False, help='[optional] Scale of the length of the map (defaults to 1.0)')
+        parser.add_argument('--y_scale', type=float, required=False, help='[optional] Scale of the width of the map (defaults to 1.0)')
+        parser.add_argument('--z_scale', type=float, required=False, help='[optional] Scale of the height of the map (defaults to 1.0)')
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.clear(1.0, 1.0, 1.0, 0.0)
         self.ctx.enable(DEPTH_TEST)
         self.input_color.value = (0.75, 0.75, 0.75)
+        waves_speed: float = 7
+        self.water_floating_param.value = (waves_speed * time, waves_speed * time, waves_speed * time)
 
         proj: Matrix44 = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 2000.0)
 
-        self.tr_matrix.write((proj * Matrix44.look_at(self.lookat, (0.0, 0.0, 1.0),
+        self.tr_matrix.write((proj * Matrix44.look_at(self.viewer_pos, (0.0, 0.0, 1.0),
                                                       (0.0, 0.0, 1.0), )
                               * Matrix44.from_z_rotation(1 / 10 * 2 * np.pi)
-                              * Matrix44.from_translation((-self.x_range / 2, -self.x_range / 2, 1.0))
-                              * Matrix44.from_scale((1.0, 1.0, self.height_scale))
+                              * Matrix44.from_translation((
+                                    -self.x_range / 2 * self.x_scale,
+                                    -self.y_range / 2 * self.y_scale,
+                                    1.0))
+                              * Matrix44.from_scale((self.x_scale, self.y_scale, self.z_scale))
                               ).astype('float32'))
         self.vao.render(TRIANGLE_STRIP)
 
     def mouse_drag_event(self, x: int, y: int, dx: int, dy: int) -> None:
-        # rotate camera around the robot
         width, height = self.wnd.size
         if width > height * self.aspect_ratio:
             width = height * self.aspect_ratio
@@ -171,9 +188,9 @@ class MainWindowConfig(WindowConfig):
             height = width / self.aspect_ratio
         scaled_dx: float = dx * 2.0 / width
         scaled_dy: float = dy * 2.0 / height
-        radius: float = math.sqrt(self.lookat[0] ** 2 + self.lookat[1] ** 2 + self.lookat[2] ** 2)
-        eye_vec4: Vector4 = Vector4(self.lookat + (1.0,))
-        current_angle_horizontal: float = math.atan2(self.lookat[1], self.lookat[0])
+        radius: float = math.sqrt(self.viewer_pos[0] ** 2 + self.viewer_pos[1] ** 2 + self.viewer_pos[2] ** 2)
+        eye_vec4: Vector4 = Vector4(self.viewer_pos + (1.0,))
+        current_angle_horizontal: float = math.atan2(self.viewer_pos[1], self.viewer_pos[0])
         new_eye: Vector4 = Matrix44.from_eulers((
             -4 * math.sin(current_angle_horizontal) * scaled_dy,
             4 * scaled_dx,
@@ -181,17 +198,18 @@ class MainWindowConfig(WindowConfig):
         )) * eye_vec4
         # if camera is near the zenith or nadir, try to limit its "jumping" behavior
         new_radius_horizontal: float = math.sqrt(new_eye[0] ** 2 + new_eye[1] ** 2)
-        if radius > 0.0 and new_radius_horizontal / radius > 0.1:
-            self.lookat = tuple(new_eye)[:3]
+        if radius > 0.0 and new_radius_horizontal / radius > 0.1 and tuple(new_eye)[2] > self.sea_level:
+            self.viewer_pos = tuple(new_eye)[:3]
 
     def mouse_scroll_event(self, x_offset: float, y_offset: float) -> None:
         # make the object appear bigger when scrolling up and smaller when scrolling down
         y_offset /= 2
-        radius: float = math.sqrt(self.lookat[0] ** 2 + self.lookat[1] ** 2 + self.lookat[2] ** 2)
+        radius: float = math.sqrt(self.viewer_pos[0] ** 2 + self.viewer_pos[1] ** 2 + self.viewer_pos[2] ** 2)
         radius *= (1 - y_offset)
-        if radius >= 1.0:  # prevent unwanted scene rotation
-            self.lookat = (
-                self.lookat[0] * (1 - y_offset),
-                self.lookat[1] * (1 - y_offset),
-                self.lookat[2] * (1 - y_offset)
+        viewer_pos: tuple[float, float, float] = (
+                self.viewer_pos[0] * (1 - y_offset),
+                self.viewer_pos[1] * (1 - y_offset),
+                (self.viewer_pos[2] - self.sea_level) * (1 - y_offset) + self.sea_level
             )
+        if radius >= 1.0 and viewer_pos[2] > self.sea_level:  # prevent unwanted scene rotation
+            self.viewer_pos = viewer_pos

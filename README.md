@@ -25,11 +25,15 @@ W tym celu należy zaimplementować następujące punkty:
 # Uruchamianie programu
 
 Program jest uruchamiany poprzez wywołanie skryptu `main.py` oraz podanie mu niezbędnych parametrów:
-- shader_name - nazwa wybranego shadera
-- map_name - nazwa wybranej mapy wysokości
+- --shader_name - nazwa wybranego shadera
+- --map_name - nazwa wybranej mapy wysokości
 
 Skrypt przyjmuje też opcjonalne parametry:
-- height_scale - odpowiada za skalowanie "górzystości" renderowanego terenu (w szczególności: jej zmniejszanie). Przyjmuje wartości zmiennoprzecinkowe. Domyślnie wynosi `1.0`.
+- --x_scale - odpowiada za skalowanie długości mapy. Przyjmuje wartości zmiennoprzecinkowe. Domyślnie wynosi `1.0`.
+- --y_scale - odpowiada za skalowanie szerokości mapy. Przyjmuje wartości zmiennoprzecinkowe. Domyślnie wynosi `1.0`.
+- --z_scale - odpowiada za skalowanie wysokości ("górzystości") renderowanego terenu, a w szczególności: jej zmniejszanie. Przyjmuje wartości zmiennoprzecinkowe. Domyślnie wynosi `1.0`.
+- -M - odpowiada za długość mapy. Przyjmuje wartości całkowite. Domyślnie wynosi `200`.
+- -N - odpowiada za szerokość mapy. Przyjmuje wartości całkowite. Domyślnie wynosi `200`.
 
 Należy pamiętać, że wszystkie shadery powinny znajdować się w katalogu `resources/shaders/`, natomiast wszystkie mapy wysokości w katalogu `resources/heightmaps/`.
 
@@ -37,4 +41,8 @@ Należy pamiętać, że wszystkie shadery powinny znajdować się w katalogu `re
 
 `python3 main.py --shader_name phong --map_name heightmap_1`
 
-`python3 main.py --shader_name phong --map_name heightmap_uk_2 --height_scale 0.1`
+`python3 main.py --shader_name phong --map_name heightmap_uk_2 --z_scale 0.1`
+
+`python3 main.py --shader_name phong --map_name heightmap_uk_2 --x_scale 2.0 --y_scale 3.0 --z_scale 0.2`
+
+`python3 main.py --shader_name phong --map_name heightmap_uk_2 -N 250 -M 300`
