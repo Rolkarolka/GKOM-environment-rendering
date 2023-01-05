@@ -15,7 +15,7 @@ uniform float ambient_factor = 0.6;
 uniform float diffuse_factor = 1.0;
 uniform float specular_factor = 0.1;
 
-uniform float shininess = 0.0;
+uniform float shininess = 0.1;
 
 uniform sampler2D texture_grass;
 uniform sampler2D texture_forest;
